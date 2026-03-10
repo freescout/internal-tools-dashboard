@@ -1,7 +1,7 @@
 // Currency formatter — €2,450
 export const formatCurrency = (amount) => {
   if (amount === null || amount === undefined || amount === 0) return "—";
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("en-IE", {
     style: "currency",
     currency: "EUR",
     maximumFractionDigits: 0,
