@@ -2,22 +2,22 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 
 const variants = {
   success: {
-    iconBg: "bg-accent-green",
+    iconBg: "bg-gradient-to-br from-accent-green to-teal-400",
     trendBg: "bg-accent-green/10",
     trendColor: "text-status-active",
   },
   purple: {
-    iconBg: "bg-accent-purple",
+    iconBg: "bg-gradient-to-br from-accent-purple to-accent-blue",
     trendBg: "bg-accent-purple/10",
     trendColor: "text-accent-purple",
   },
   pink: {
-    iconBg: "bg-accent-pink",
+    iconBg: "bg-gradient-to-br from-accent-pink to-orange-400",
     trendBg: "bg-accent-pink/10",
     trendColor: "text-accent-pink",
   },
   blue: {
-    iconBg: "bg-accent-blue",
+    iconBg: "bg-gradient-to-br from-accent-blue to-cyan-400",
     trendBg: "bg-accent-blue/10",
     trendColor: "text-accent-blue",
   },

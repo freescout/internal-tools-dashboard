@@ -71,7 +71,9 @@ export default function Header() {
           {/* Notifications */}
           <button className="relative p-2 rounded-lg hover:bg-white/5 transition-colors">
             <Bell size={18} className="text-text-secondary" />
-            <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-red-500" />
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 flex items-center justify-center text-white text-[9px] font-bold">
+              3
+            </span>
           </button>
 
           {/* Settings */}

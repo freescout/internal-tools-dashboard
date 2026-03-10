@@ -1,32 +1,25 @@
-const statusConfig = {
+const styles = {
   active: {
     label: "Active",
-    dot: "bg-status-active",
-    text: "text-status-active",
-    bg: "bg-status-active/10",
+    bg: "bg-emerald-500",
   },
   expiring: {
     label: "Expiring",
-    dot: "bg-status-expiring",
-    text: "text-status-expiring",
-    bg: "bg-status-expiring/10",
+    bg: "bg-amber-500",
   },
   unused: {
     label: "Unused",
-    dot: "bg-status-unused",
-    text: "text-status-unused",
-    bg: "bg-status-unused/10",
+    bg: "bg-red-500",
   },
 };
 
-export default function StatusBadge({ status }) {
-  const config = statusConfig[status] ?? statusConfig.unused;
+export default function StatusBadge({ status = "active" }) {
+  const config = styles[status] || styles.unused;
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium text-white ${config.bg}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
       {config.label}
     </span>
   );
