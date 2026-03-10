@@ -21,11 +21,11 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface-dark">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+      <div className=" flex h-16 w-full items-center justify-between px-6">
         {/* Logo */}
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue flex items-center justify-center">
+            <div className="h-8 w-8 rounded-lg bg-linear-to-r from-accent-purple to-accent-blue flex items-center justify-center">
               <Zap size={20} className="text-white" />
             </div>
             <span className="text-lg font-semibold text-text-primary">
