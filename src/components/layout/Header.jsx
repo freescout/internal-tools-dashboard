@@ -8,12 +8,13 @@ import {
   Settings,
 } from "lucide-react";
 import { useState } from "react";
+import { NavLink } from "react-router-dom";
 
 const navLinks = [
-  { label: "Dashboard", path: "/", active: true },
-  { label: "Tools", path: "/tools", active: false },
-  { label: "Analytics", path: "/analytics", active: false },
-  { label: "Settings", path: "/settings", active: false },
+  { label: "Dashboard", path: "/" },
+  { label: "Tools", path: "/tools" },
+  { label: "Analytics", path: "/analytics" },
+  { label: "Settings", path: "/settings" },
 ];
 
 export default function Header() {
@@ -36,17 +37,19 @@ export default function Header() {
           {/* Nav */}
           <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link) => (
-              <a
+              <NavLink
                 key={link.label}
-                href={link.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  link.active
-                    ? "bg-accent-purple/10 text-accent-purple"
-                    : "text-text-secondary hover:text-text-primary hover:bg-white/5"
-                }`}
+                to={link.path}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-accent-purple/10 text-accent-purple"
+                      : "text-text-secondary hover:text-text-primary hover:bg-white/5"
+                  }`
+                }
               >
                 {link.label}
-              </a>
+              </NavLink>
             ))}
           </nav>
         </div>
@@ -104,9 +107,9 @@ export default function Header() {
       {menuOpen && (
         <div className="md:hidden border-t border-border bg-surface px-4 py-3 flex flex-col gap-1">
           {navLinks.map((link) => (
-            <a
+            <NavLink
               key={link.label}
-              href={link.path}
+              to={link.path}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 link.active
                   ? "bg-accent-purple/10 text-accent-purple font-semibold"
@@ -114,7 +117,7 @@ export default function Header() {
               }`}
             >
               {link.label}
-            </a>
+            </NavLink>
           ))}
         </div>
       )}

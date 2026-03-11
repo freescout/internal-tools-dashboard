@@ -26,4 +26,16 @@ export const fetchRecentTools = () =>
 
 export const fetchAllTools = () => api.get("/tools").then((res) => res.data);
 
+// Tools - CRUD
+export const createTool = (data) =>
+  api.post(`/tools`, data).then((res) => res.data);
+
+export const updateTool = (id, data) =>
+  api.put(`/tools/${id}`, data).then((res) => res.data);
+
+export const deleteTool = (id) =>
+  api.delete(`/tools/${id}`).then((res) => res.data);
+
+export const bulkDeleteTools = (ids) => Promise.all(ids.map(deleteTool));
+
 export default api;
