@@ -6,19 +6,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  MessageSquare,
-  Palette,
-  Zap,
-  FileText,
-  Brush,
-  Video,
-  Wrench,
-  Briefcase,
   Box,
-  Shield,
-  Building2,
-  Terminal,
-  Layout,
   Eye,
   Pencil,
   Trash2,
@@ -159,7 +147,12 @@ export default function ToolsTable({
             ) : (
               paginated.map((tool, i) => {
                 const isSelected = hasSelection && selected.has(tool.id);
-                const { icon: Icon, bg, color } = getToolIcon(tool.name);
+                const {
+                  icon: Icon,
+                  bg,
+                  color,
+                  url,
+                } = getToolIcon(tool.name, tool.icon_url);
                 return (
                   <tr
                     key={tool.id}
@@ -183,7 +176,15 @@ export default function ToolsTable({
                         <div
                           className={`h-7 w-7 rounded-md ${bg} flex items-center justify-center shrink-0`}
                         >
-                          <Icon size={14} className={color} />
+                          {url ? (
+                            <img
+                              src={url}
+                              alt={tool.name}
+                              className="h-4 w-4 object-contain rounded"
+                            />
+                          ) : (
+                            <Icon size={14} className={color} />
+                          )}
                         </div>
                         <div>
                           <p className="text-sm font-medium text-text-primary leading-tight">

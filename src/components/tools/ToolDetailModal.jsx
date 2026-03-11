@@ -45,12 +45,25 @@ export default function ToolDetailModal({
         <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-border">
           <div className="flex items-start gap-3">
             {(() => {
-              const { icon: Icon, bg, color } = getToolIcon(tool.name);
+              const {
+                icon: Icon,
+                bg,
+                color,
+                url,
+              } = getToolIcon(tool.name, tool.icon_url);
               return (
                 <div
                   className={`h-10 w-10 rounded-xl ${bg} flex items-center justify-center shrink-0`}
                 >
-                  <Icon size={18} className={color} />
+                  {url ? (
+                    <img
+                      src={url}
+                      alt={tool.name}
+                      className="h-6 w-6 object-contain rounded"
+                    />
+                  ) : (
+                    <Icon size={18} className={color} />
+                  )}
                 </div>
               );
             })()}

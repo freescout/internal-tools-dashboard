@@ -41,13 +41,15 @@ const toolIconMap = {
   "office 365": { icon: Layout, bg: "bg-red-500/10", color: "text-red-400" },
 };
 
-export const getToolIcon = (name) => {
+export const getToolIcon = (name, iconUrl) => {
   const key = name?.toLowerCase().trim();
-  return (
-    toolIconMap[key] ?? {
-      icon: Box,
-      bg: "bg-accent-purple/10",
-      color: "text-accent-purple",
-    }
-  );
+  const mapped = toolIconMap[key];
+  if (mapped) return { ...mapped, url: null };
+  if (iconUrl) return { icon: null, bg: "bg-white/5", color: "", url: iconUrl };
+  return {
+    icon: Box,
+    bg: "bg-accent-purple/10",
+    color: "text-accent-purple",
+    url: null,
+  };
 };
