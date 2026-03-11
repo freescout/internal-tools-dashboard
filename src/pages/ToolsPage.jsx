@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, Search, X } from "lucide-react";
 import ToolsTable from "../components/tools/ToolsTable";
 import ToolsSidebar from "../components/tools/ToolsSidebar";
-import { useTools } from "../hooks/useTools";
+import { useCreateTool, useTools, useUpdateTool } from "../hooks/useTools";
+import ToolModal from "../components/tools/ToolModal";
 
 export default function ToolsPage() {
   const { data: tools = [], isLoading, isError } = useTools();
@@ -17,6 +18,22 @@ export default function ToolsPage() {
     costMin: "",
     costMax: "",
   });
+
+  const createMutation = useCreateTool();
+  const updateMutation = useUpdateTool();
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+
+  const handleAdd = async (data) => {
+    await createMutation.mutateAsync(data);
+    setAddOpen(false);
+  };
+
+  const handleEdit = async (data) => {
+    await updateMutation.mutateAsync({ id: editTarget.id, data });
+    setEditTarget(null);
+  };
 
   const filtered = useMemo(() => {
     return tools.filter((t) => {
@@ -82,12 +99,19 @@ export default function ToolsPage() {
         </div>
         <div className="flex items-center gap-2">
           {selected.size > 0 && (
-            <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-status-unused/40 text-status-unused hover:bg-status-unused/10 rounded-lg transition-colors">
+            <button
+              /* onClick={() => setBulkDeleteOpen(true)} */
+              onClick={() => console.log("bulk delete", [...selected])}
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-status-unused/40 text-status-unused hover:bg-status-unused/10 rounded-lg transition-colors"
+            >
               <Trash2 size={14} />
               Delete {selected.size}
             </button>
           )}
-          <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-accent-purple hover:bg-accent-purple/90 text-white rounded-lg transition-colors">
+          <button
+            onClick={() => setAddOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-accent-purple hover:bg-accent-purple/90 text-white rounded-lg transition-colors"
+          >
             <Plus size={15} />
             Add Tool
           </button>
@@ -147,7 +171,7 @@ export default function ToolsPage() {
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
               onView={(tool) => console.log("view", tool)}
-              onEdit={(tool) => console.log("edit", tool)}
+              onEdit={(tool) => setEditTarget(tool)}
               onDelete={(tool) => console.log("delete", tool)}
               onReset={() => {
                 setFilters({
@@ -163,6 +187,20 @@ export default function ToolsPage() {
           )}
         </div>
       </div>
+      {/* Modals */}
+      <ToolModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSubmit={handleAdd}
+        loading={createMutation.isPending}
+      />
+      <ToolModal
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        onSubmit={handleEdit}
+        initial={editTarget}
+        loading={updateMutation.isPending}
+      />
     </div>
   );
 }
