@@ -171,6 +171,36 @@ export default function ToolsPage() {
         )}
       </div>
 
+      {/* Active filter chips */}
+      {(filters.status || filters.department || filters.category) && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-text-muted">Active filters:</span>
+          {[
+            filters.status && { key: "status", label: filters.status },
+            filters.department && {
+              key: "department",
+              label: filters.department,
+            },
+            filters.category && { key: "category", label: filters.category },
+          ]
+            .filter(Boolean)
+            .map(({ key, label }) => (
+              <span
+                key={key}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-accent-purple/10 text-accent-purple border border-accent-purple/20 capitalize"
+              >
+                {label}
+                <button
+                  onClick={() => handleFiltersChange({ ...filters, [key]: "" })}
+                  className="hover:text-white transition-colors"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            ))}
+        </div>
+      )}
+
       {/* Body: sidebar + table */}
       <div className="flex gap-5 items-start">
         <ToolsSidebar
