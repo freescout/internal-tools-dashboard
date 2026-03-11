@@ -19,10 +19,13 @@ import {
   Building2,
   Terminal,
   Layout,
+  Eye,
 } from "lucide-react";
+import Checkbox from "./Checkbox";
 
 const COLUMNS = [
   { key: "name", label: "Tool" },
+  { key: "category", label: "Category" },
   { key: "owner_department", label: "Department" },
   { key: "active_users_count", label: "Users" },
   { key: "monthly_cost", label: "Monthly Cost" },
@@ -72,7 +75,10 @@ const ITEMS_PER_PAGE = 10;
 export default function ToolsTable({
   tools = [],
   showPagination = false,
-  showFilters = false,
+  selected, // Set<id> — if passed, enables checkboxes
+  onToggleSelect, // (id) => void
+  onToggleSelectAll, // () => void
+  onView,
   onEdit,
   onDelete,
 }) {
@@ -80,35 +86,49 @@ export default function ToolsTable({
   const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const hasSelection = selected instanceof Set;
+
   const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
+    if (sortKey === key) setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    else {
       setSortKey(key);
       setSortOrder("asc");
     }
     setCurrentPage(1);
   };
 
-  const sortedTools = [...tools].sort((a, b) => {
+  const sorted = [...tools].sort((a, b) => {
     if (!sortKey) return 0;
-    const aVal = a[sortKey] ?? "";
-    const bVal = b[sortKey] ?? "";
-    if (typeof aVal === "number" && typeof bVal === "number") {
-      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-    }
+    const av = a[sortKey] ?? "";
+    const bv = b[sortKey] ?? "";
+    if (typeof av === "number" && typeof bv === "number")
+      return sortOrder === "asc" ? av - bv : bv - av;
     return sortOrder === "asc"
-      ? String(aVal).localeCompare(String(bVal))
-      : String(bVal).localeCompare(String(aVal));
+      ? String(av).localeCompare(String(bv))
+      : String(bv).localeCompare(String(av));
   });
 
-  const totalPages = Math.ceil(sortedTools.length / ITEMS_PER_PAGE);
-  const paginatedTools = showPagination
-    ? sortedTools.slice(
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
+  const paginated = showPagination
+    ? sorted.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
         currentPage * ITEMS_PER_PAGE,
       )
-    : sortedTools;
+    : sorted;
+
+  const allPageSelected =
+    hasSelection &&
+    paginated.length > 0 &&
+    paginated.every((t) => selected.has(t.id));
+  const someSelected =
+    hasSelection &&
+    paginated.some((t) => selected.has(t.id)) &&
+    !allPageSelected;
+
+  const colSpan =
+    COLUMNS.length +
+    (hasSelection ? 1 : 0) +
+    (onView || onEdit || onDelete ? 1 : 0);
 
   return (
     <div className="overflow-hidden">
@@ -116,6 +136,15 @@ export default function ToolsTable({
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
+              {hasSelection && (
+                <th className="px-4 py-3 w-10">
+                  <Checkbox
+                    checked={allPageSelected}
+                    indeterminate={someSelected}
+                    onChange={onToggleSelectAll}
+                  />
+                </th>
+              )}
               {COLUMNS.map((col) => (
                 <th
                   key={col.key}
@@ -136,7 +165,7 @@ export default function ToolsTable({
                   </div>
                 </th>
               ))}
-              {(onEdit || onDelete) && (
+              {(onView || onEdit || onDelete) && (
                 <th className="px-4 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   Actions
                 </th>
@@ -145,103 +174,133 @@ export default function ToolsTable({
           </thead>
 
           <tbody>
-            {paginatedTools.length === 0 ? (
+            {paginated.length === 0 ? (
               <tr>
-                <td
-                  colSpan={COLUMNS.length}
-                  className="px-4 py-12 text-center text-text-muted text-sm"
-                >
-                  No tools found
+                <td colSpan={colSpan} className="px-4 py-16 text-center">
+                  <div className="flex flex-col items-center gap-2 text-text-muted">
+                    <Box size={28} className="opacity-30" />
+                    <span className="text-sm">No tools found</span>
+                  </div>
                 </td>
               </tr>
             ) : (
-              paginatedTools.map((tool, index) => (
-                <tr
-                  key={tool.id}
-                  className={`border-b border-border/50 hover:bg-white/5 transition-colors ${
-                    index === paginatedTools.length - 1 ? "border-b-0" : ""
-                  }`}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {(() => {
-                        const {
-                          icon: Icon,
-                          bg,
-                          color,
-                        } = getToolIcon(tool.name);
-                        return (
-                          <div
-                            className={`h-7 w-7 rounded-md ${bg} flex items-center justify-center shrink-0`}
-                          >
-                            <Icon size={14} className={color} />
-                          </div>
-                        );
-                      })()}
-                      <span className="text-sm font-medium text-text-primary">
-                        {truncateText(tool.name, 30)}
-                      </span>
-                    </div>
-                  </td>
+              paginated.map((tool, i) => {
+                const isSelected = hasSelection && selected.has(tool.id);
+                const { icon: Icon, bg, color } = getToolIcon(tool.name);
+                return (
+                  <tr
+                    key={tool.id}
+                    className={`border-b transition-colors ${
+                      i === paginated.length - 1
+                        ? "border-b-0"
+                        : "border-border/50"
+                    } ${isSelected ? "bg-accent-purple/5" : "hover:bg-white/5"}`}
+                  >
+                    {hasSelection && (
+                      <td className="px-4 py-3 w-10">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => onToggleSelect(tool.id)}
+                        />
+                      </td>
+                    )}
 
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-text-secondary capitalize">
-                      {tool.owner_department ?? "—"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-text-secondary">
-                      {tool.active_users_count ?? "—"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <span className="text-sm text-text-secondary">
-                      {tool.monthly_cost
-                        ? formatCurrency(tool.monthly_cost)
-                        : "—"}
-                    </span>
-                  </td>
-
-                  <td className="px-4 py-3">
-                    <StatusBadge status={tool.status ?? "unused"} />
-                  </td>
-
-                  {(onEdit || onDelete) && (
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        {onEdit && (
-                          <button
-                            onClick={() => onEdit(tool)}
-                            className="text-xs text-accent-blue hover:underline"
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {onDelete && (
-                          <button
-                            onClick={() => onDelete(tool)}
-                            className="text-xs text-status-unused hover:underline"
-                          >
-                            Delete
-                          </button>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`h-7 w-7 rounded-md ${bg} flex items-center justify-center shrink-0`}
+                        >
+                          <Icon size={14} className={color} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-text-primary leading-tight">
+                            {truncateText(tool.name, 25)}
+                          </p>
+                          {tool.vendor && (
+                            <p className="text-xs text-text-muted">
+                              {tool.vendor}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </td>
-                  )}
-                </tr>
-              ))
+
+                    <td className="px-4 py-3">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-text-secondary border border-border">
+                        {tool.category ?? "—"}
+                      </span>
+                      {/*                       <span className="text-xs px-2 py-1 rounded-md bg-surface border border-border text-text-secondary">
+                        {tool.category}
+                      </span> */}
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-text-secondary capitalize">
+                        {tool.owner_department ?? "—"}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-text-secondary">
+                        {tool.active_users_count ?? "—"}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-text-secondary">
+                        {tool.monthly_cost
+                          ? formatCurrency(tool.monthly_cost)
+                          : "—"}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <StatusBadge status={tool.status ?? "unused"} />
+                    </td>
+
+                    {(onView || onEdit || onDelete) && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3 text-xs">
+                          {onView && (
+                            <button
+                              onClick={() => onView(tool)}
+                              className="text-text-muted hover:text-text-primary transition-colors"
+                              title="View details"
+                            >
+                              <Eye size={14} />
+                            </button>
+                          )}
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(tool)}
+                              className="text-xs text-accent-blue hover:underline"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(tool)}
+                              className="text-xs text-status-unused hover:underline"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
       {showPagination && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-border">
           <span className="text-xs text-text-muted">
-            Page {currentPage} of {totalPages}
+            Page {currentPage} of {totalPages} · {sorted.length} tools
           </span>
           <div className="flex items-center gap-2">
             <button
