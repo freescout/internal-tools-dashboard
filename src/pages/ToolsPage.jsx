@@ -2,8 +2,15 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, Search, X } from "lucide-react";
 import ToolsTable from "../components/tools/ToolsTable";
 import ToolsSidebar from "../components/tools/ToolsSidebar";
-import { useCreateTool, useTools, useUpdateTool } from "../hooks/useTools";
+import {
+  useBulkDeleteTools,
+  useCreateTool,
+  useDeleteTool,
+  useTools,
+  useUpdateTool,
+} from "../hooks/useTools";
 import ToolModal from "../components/tools/ToolModal";
+import ConfirmModal from "../components/tools/ConfirmModal";
 
 export default function ToolsPage() {
   const { data: tools = [], isLoading, isError } = useTools();
@@ -21,9 +28,13 @@ export default function ToolsPage() {
 
   const createMutation = useCreateTool();
   const updateMutation = useUpdateTool();
+  const deleteMutation = useDeleteTool();
+  const bulkDeleteMutation = useBulkDeleteTools();
 
   const [addOpen, setAddOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
   const handleAdd = async (data) => {
     await createMutation.mutateAsync(data);
@@ -33,6 +44,22 @@ export default function ToolsPage() {
   const handleEdit = async (data) => {
     await updateMutation.mutateAsync({ id: editTarget.id, data });
     setEditTarget(null);
+  };
+
+  const handleDelete = async () => {
+    await deleteMutation.mutateAsync(deleteTarget.id);
+    setDeleteTarget(null);
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.delete(deleteTarget.id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    await bulkDeleteMutation.mutateAsync([...selected]);
+    setSelected(new Set());
+    setBulkDeleteOpen(false);
   };
 
   const filtered = useMemo(() => {
@@ -100,8 +127,7 @@ export default function ToolsPage() {
         <div className="flex items-center gap-2">
           {selected.size > 0 && (
             <button
-              /* onClick={() => setBulkDeleteOpen(true)} */
-              onClick={() => console.log("bulk delete", [...selected])}
+              onClick={() => setBulkDeleteOpen(true)}
               className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-status-unused/40 text-status-unused hover:bg-status-unused/10 rounded-lg transition-colors"
             >
               <Trash2 size={14} />
@@ -172,7 +198,7 @@ export default function ToolsPage() {
               onToggleSelectAll={toggleSelectAll}
               onView={(tool) => console.log("view", tool)}
               onEdit={(tool) => setEditTarget(tool)}
-              onDelete={(tool) => console.log("delete", tool)}
+              onDelete={(tool) => setDeleteTarget(tool)}
               onReset={() => {
                 setFilters({
                   department: "",
@@ -188,18 +214,39 @@ export default function ToolsPage() {
         </div>
       </div>
       {/* Modals */}
+
       <ToolModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onSubmit={handleAdd}
         loading={createMutation.isPending}
       />
+
       <ToolModal
         open={!!editTarget}
         onClose={() => setEditTarget(null)}
         onSubmit={handleEdit}
         initial={editTarget}
         loading={updateMutation.isPending}
+      />
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        loading={deleteMutation.isPending}
+        title="Delete tool"
+        message={`"${deleteTarget?.name}" will be permanently deleted.`}
+      />
+
+      <ConfirmModal
+        open={bulkDeleteOpen}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+        loading={bulkDeleteMutation.isPending}
+        title="Delete selected tools"
+        count={selected.size}
+        confirmLabel={`Delete ${selected.size} tools`}
       />
     </div>
   );
