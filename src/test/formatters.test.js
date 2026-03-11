@@ -3,6 +3,8 @@ import {
   formatCurrency,
   truncateText,
   sanitizeTools,
+  formatNumber,
+  formatDate,
 } from "../utils/formatters";
 
 describe("formatCurrency", () => {
@@ -78,4 +80,43 @@ describe("sanitizeTools", () => {
     const result = sanitizeTools(tools);
     expect(result).toHaveLength(1);
   });
+});
+
+describe("formatCurrency", () => {
+  it("returns — for null", () => expect(formatCurrency(null)).toBe("—"));
+  it("returns — for 0", () => expect(formatCurrency(0)).toBe("—"));
+  it("formats a number", () => expect(formatCurrency(2450)).toContain("2,450"));
+});
+
+describe("formatNumber", () => {
+  it("returns — for null", () => expect(formatNumber(null)).toBe("—"));
+  it("returns — for undefined", () =>
+    expect(formatNumber(undefined)).toBe("—"));
+  it("formats a number", () => expect(formatNumber(1234)).toBeTruthy());
+});
+
+describe("formatDate", () => {
+  it("returns — for empty string", () => expect(formatDate("")).toBe("—"));
+  it("returns — for null", () => expect(formatDate(null)).toBe("—"));
+  it("formats a valid date", () =>
+    expect(formatDate("2024-01-12")).toContain("2024"));
+});
+
+describe("truncateText", () => {
+  it("returns — for null", () => expect(truncateText(null)).toBe("—"));
+  it("returns full text if short", () =>
+    expect(truncateText("Hello")).toBe("Hello"));
+  it("truncates long text", () =>
+    expect(truncateText("a".repeat(31))).toContain("..."));
+});
+
+describe("sanitizeTools", () => {
+  it("removes tools with no name", () =>
+    expect(sanitizeTools([{ name: "" }])).toHaveLength(0));
+  it("removes garbage names", () =>
+    expect(sanitizeTools([{ name: "tutu" }])).toHaveLength(0));
+  it("keeps valid tools", () =>
+    expect(
+      sanitizeTools([{ name: "Slack", category: "Communication" }]),
+    ).toHaveLength(1));
 });
