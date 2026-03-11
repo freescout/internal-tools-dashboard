@@ -1,5 +1,11 @@
 import { useState } from "react";
+import StatusBadge from "../ui/StatusBadge";
+import { formatCurrency, truncateText } from "../../utils/formatters";
 import {
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   MessageSquare,
   Palette,
   Zap,
@@ -14,9 +20,6 @@ import {
   Terminal,
   Layout,
 } from "lucide-react";
-import StatusBadge from "../ui/StatusBadge";
-import { formatCurrency, truncateText } from "../../utils/formatters";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 const COLUMNS = [
   { key: "name", label: "Tool" },
@@ -52,6 +55,7 @@ const toolIconMap = {
   nvim: { icon: Terminal, bg: "bg-emerald-500/10", color: "text-emerald-400" },
   "office 365": { icon: Layout, bg: "bg-red-500/10", color: "text-red-400" },
 };
+
 const getToolIcon = (name) => {
   const key = name?.toLowerCase().trim();
   return (
@@ -63,15 +67,18 @@ const getToolIcon = (name) => {
   );
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export default function ToolsTable({
   tools = [],
-  /* showPagination = false, */
-  /*  showFilters = false, */
+  showPagination = false,
+  showFilters = false,
   onEdit,
   onDelete,
 }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleSort = (key) => {
     if (sortKey === key) {
@@ -80,6 +87,7 @@ export default function ToolsTable({
       setSortKey(key);
       setSortOrder("asc");
     }
+    setCurrentPage(1);
   };
 
   const sortedTools = [...tools].sort((a, b) => {
@@ -94,12 +102,18 @@ export default function ToolsTable({
       : String(bVal).localeCompare(String(aVal));
   });
 
+  const totalPages = Math.ceil(sortedTools.length / ITEMS_PER_PAGE);
+  const paginatedTools = showPagination
+    ? sortedTools.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE,
+      )
+    : sortedTools;
+
   return (
-    <div className="rounded-xl border border-border bg-surface overflow-hidden">
-      {/* Table */}
+    <div className="overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          {/* Header */}
           <thead>
             <tr className="border-b border-border">
               {COLUMNS.map((col) => (
@@ -130,9 +144,8 @@ export default function ToolsTable({
             </tr>
           </thead>
 
-          {/* Body */}
           <tbody>
-            {sortedTools.length === 0 ? (
+            {paginatedTools.length === 0 ? (
               <tr>
                 <td
                   colSpan={COLUMNS.length}
@@ -142,11 +155,11 @@ export default function ToolsTable({
                 </td>
               </tr>
             ) : (
-              sortedTools.map((tool, index) => (
+              paginatedTools.map((tool, index) => (
                 <tr
                   key={tool.id}
                   className={`border-b border-border/50 hover:bg-white/5 transition-colors ${
-                    index === sortedTools.length - 1 ? "border-b-0" : ""
+                    index === paginatedTools.length - 1 ? "border-b-0" : ""
                   }`}
                 >
                   <td className="px-4 py-3">
@@ -171,21 +184,18 @@ export default function ToolsTable({
                     </div>
                   </td>
 
-                  {/* Department */}
                   <td className="px-4 py-3">
                     <span className="text-sm text-text-secondary capitalize">
                       {tool.owner_department ?? "—"}
                     </span>
                   </td>
 
-                  {/* Users */}
                   <td className="px-4 py-3">
                     <span className="text-sm text-text-secondary">
                       {tool.active_users_count ?? "—"}
                     </span>
                   </td>
 
-                  {/* Monthly Cost */}
                   <td className="px-4 py-3">
                     <span className="text-sm text-text-secondary">
                       {tool.monthly_cost
@@ -194,12 +204,10 @@ export default function ToolsTable({
                     </span>
                   </td>
 
-                  {/* Status */}
                   <td className="px-4 py-3">
                     <StatusBadge status={tool.status ?? "unused"} />
                   </td>
 
-                  {/* Actions */}
                   {(onEdit || onDelete) && (
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -228,6 +236,31 @@ export default function ToolsTable({
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {showPagination && totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <span className="text-xs text-text-muted">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-border hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={14} className="text-text-secondary" />
+            </button>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-border hover:bg-white/5 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} className="text-text-secondary" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
