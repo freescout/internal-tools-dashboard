@@ -20,12 +20,13 @@ import {
   Terminal,
   Layout,
   Eye,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import Checkbox from "./Checkbox";
 
 const COLUMNS = [
   { key: "name", label: "Tool" },
-  { key: "category", label: "Category" },
   { key: "owner_department", label: "Department" },
   { key: "active_users_count", label: "Users" },
   { key: "monthly_cost", label: "Monthly Cost" },
@@ -81,6 +82,7 @@ export default function ToolsTable({
   onView,
   onEdit,
   onDelete,
+  onReset,
 }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortOrder, setSortOrder] = useState("asc");
@@ -137,7 +139,7 @@ export default function ToolsTable({
           <thead>
             <tr className="border-b border-border">
               {hasSelection && (
-                <th className="px-4 py-3 w-10">
+                <th className="px-3 py-3.5 w-10">
                   <Checkbox
                     checked={allPageSelected}
                     indeterminate={someSelected}
@@ -176,10 +178,18 @@ export default function ToolsTable({
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={colSpan} className="px-4 py-16 text-center">
+                <td colSpan={colSpan} className="px-3 py-16 text-center">
                   <div className="flex flex-col items-center gap-2 text-text-muted">
                     <Box size={28} className="opacity-30" />
-                    <span className="text-sm">No tools found</span>
+                    <p className="text-sm">No tools match your filters</p>
+                    {onReset && (
+                      <button
+                        onClick={onReset}
+                        className="text-xs text-accent-purple hover:underline"
+                      >
+                        Reset filters
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -197,7 +207,7 @@ export default function ToolsTable({
                     } ${isSelected ? "bg-accent-purple/5" : "hover:bg-white/5"}`}
                   >
                     {hasSelection && (
-                      <td className="px-4 py-3 w-10">
+                      <td className="px-3 py-3.5 w-10">
                         <Checkbox
                           checked={isSelected}
                           onChange={() => onToggleSelect(tool.id)}
@@ -205,7 +215,7 @@ export default function ToolsTable({
                       </td>
                     )}
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3.5">
                       <div className="flex items-center gap-3">
                         <div
                           className={`h-7 w-7 rounded-md ${bg} flex items-center justify-center shrink-0`}
@@ -217,7 +227,7 @@ export default function ToolsTable({
                             {truncateText(tool.name, 25)}
                           </p>
                           {tool.vendor && (
-                            <p className="text-xs text-text-muted">
+                            <p className="text-xs text-text-muted truncate max-w-30">
                               {tool.vendor}
                             </p>
                           )}
@@ -225,28 +235,19 @@ export default function ToolsTable({
                       </div>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-text-secondary border border-border">
-                        {tool.category ?? "—"}
-                      </span>
-                      {/*                       <span className="text-xs px-2 py-1 rounded-md bg-surface border border-border text-text-secondary">
-                        {tool.category}
-                      </span> */}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-text-secondary capitalize">
+                    <td className="px-3 py-3.5">
+                      <span className="text-sm text-text-muted capitalize">
                         {tool.owner_department ?? "—"}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3.5">
                       <span className="text-sm text-text-secondary">
                         {tool.active_users_count ?? "—"}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3.5">
                       <span className="text-sm text-text-secondary">
                         {tool.monthly_cost
                           ? formatCurrency(tool.monthly_cost)
@@ -254,17 +255,17 @@ export default function ToolsTable({
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3.5">
                       <StatusBadge status={tool.status ?? "unused"} />
                     </td>
 
                     {(onView || onEdit || onDelete) && (
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3 text-xs">
+                      <td className="px-3 py-3.5">
+                        <div className="flex items-center gap-2">
                           {onView && (
                             <button
                               onClick={() => onView(tool)}
-                              className="text-text-muted hover:text-text-primary transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-text-primary transition-colors"
                               title="View details"
                             >
                               <Eye size={14} />
@@ -273,17 +274,19 @@ export default function ToolsTable({
                           {onEdit && (
                             <button
                               onClick={() => onEdit(tool)}
-                              className="text-xs text-accent-blue hover:underline"
+                              className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-accent-blue transition-colors"
+                              title="Edit"
                             >
-                              Edit
+                              <Pencil size={14} />
                             </button>
                           )}
                           {onDelete && (
                             <button
                               onClick={() => onDelete(tool)}
-                              className="text-xs text-status-unused hover:underline"
+                              className="p-1.5 rounded-lg hover:bg-white/5 text-text-muted hover:text-status-unused transition-colors"
+                              title="Delete"
                             >
-                              Delete
+                              <Trash2 size={14} />
                             </button>
                           )}
                         </div>
@@ -300,7 +303,9 @@ export default function ToolsTable({
       {showPagination && totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-border">
           <span className="text-xs text-text-muted">
-            Page {currentPage} of {totalPages} · {sorted.length} tools
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+            {Math.min(currentPage * ITEMS_PER_PAGE, sorted.length)} of{" "}
+            {sorted.length} tools
           </span>
           <div className="flex items-center gap-2">
             <button

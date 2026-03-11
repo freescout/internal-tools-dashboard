@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Trash2, Search, X } from "lucide-react";
 import ToolsTable from "../components/tools/ToolsTable";
+import ToolsSidebar from "../components/tools/ToolsSidebar";
 import { useTools } from "../hooks/useTools";
 
 export default function ToolsPage() {
@@ -8,18 +9,50 @@ export default function ToolsPage() {
 
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [filters, setFilters] = useState({
+    department: "",
+    status: "",
+    category: "",
+    costMin: "",
+    costMax: "",
+  });
 
   const filtered = useMemo(() => {
-    if (!search) return tools;
-    const q = search.toLowerCase();
-    return tools.filter(
-      (t) =>
+    return tools.filter((t) => {
+      const q = search.toLowerCase();
+      const matchSearch =
+        !q ||
         t.name?.toLowerCase().includes(q) ||
         t.vendor?.toLowerCase().includes(q) ||
         t.category?.toLowerCase().includes(q) ||
-        t.owner_department?.toLowerCase().includes(q),
-    );
-  }, [tools, search]);
+        t.owner_department?.toLowerCase().includes(q);
+
+      const matchDept =
+        !filters.department || t.owner_department === filters.department;
+      const matchStatus = !filters.status || t.status === filters.status;
+      const matchCategory =
+        !filters.category || t.category === filters.category;
+      const matchCostMin =
+        !filters.costMin || (t.monthly_cost ?? 0) >= +filters.costMin;
+      const matchCostMax =
+        !filters.costMax || (t.monthly_cost ?? 0) <= +filters.costMax;
+
+      return (
+        matchSearch &&
+        matchDept &&
+        matchStatus &&
+        matchCategory &&
+        matchCostMin &&
+        matchCostMax
+      );
+    });
+  }, [tools, search, filters]);
+
+  const handleFiltersChange = (next) => {
+    setFilters(next);
+    setSelected(new Set());
+  };
 
   const toggleSelect = (id) =>
     setSelected((prev) => {
@@ -86,28 +119,49 @@ export default function ToolsPage() {
         )}
       </div>
 
-      {/* Table */}
-      <div className="bg-surface border border-border rounded-2xl overflow-hidden">
-        {isLoading ? (
-          <div className="py-16 text-center text-sm text-text-muted">
-            Loading…
-          </div>
-        ) : isError ? (
-          <div className="py-16 text-center text-sm text-status-unused">
-            Failed to load tools.
-          </div>
-        ) : (
-          <ToolsTable
-            tools={filtered}
-            showPagination
-            selected={selected}
-            onToggleSelect={toggleSelect}
-            onToggleSelectAll={toggleSelectAll}
-            onView={(tool) => console.log("view", tool)}
-            onEdit={(tool) => console.log("edit", tool)}
-            onDelete={(tool) => console.log("delete", tool)}
-          />
-        )}
+      {/* Body: sidebar + table */}
+      <div className="flex gap-5 items-start">
+        <ToolsSidebar
+          filters={filters}
+          onChange={handleFiltersChange}
+          totalCount={tools.length}
+          filteredCount={filtered.length}
+          collapsed={sidebarCollapsed}
+          onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+        />
+
+        <div className="flex-1 min-w-0 bg-surface border border-border rounded-2xl overflow-hidden">
+          {isLoading ? (
+            <div className="py-16 text-center text-sm text-text-muted">
+              Loading…
+            </div>
+          ) : isError ? (
+            <div className="py-16 text-center text-sm text-status-unused">
+              Failed to load tools.
+            </div>
+          ) : (
+            <ToolsTable
+              tools={filtered}
+              showPagination
+              selected={selected}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+              onView={(tool) => console.log("view", tool)}
+              onEdit={(tool) => console.log("edit", tool)}
+              onDelete={(tool) => console.log("delete", tool)}
+              onReset={() => {
+                setFilters({
+                  department: "",
+                  status: "",
+                  category: "",
+                  costMin: "",
+                  costMax: "",
+                });
+                setSearch("");
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
