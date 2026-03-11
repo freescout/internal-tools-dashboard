@@ -8,14 +8,11 @@ import {
 } from "lucide-react";
 
 const DEPARTMENTS = [
-  "engineering",
-  "design",
-  "marketing",
-  "sales",
-  "hr",
-  "finance",
-  "operations",
-  "product",
+  "Engineering",
+  "Design",
+  "Marketing",
+  "Operations",
+  "Communication",
 ];
 const STATUSES = ["active", "expiring", "unused"];
 const CATEGORIES = [
