@@ -11,6 +11,7 @@ import {
 } from "../hooks/useTools";
 import ToolModal from "../components/tools/ToolModal";
 import ConfirmModal from "../components/tools/ConfirmModal";
+import ToolDetailModal from "../components/tools/ToolDetailModal";
 
 export default function ToolsPage() {
   const { data: tools = [], isLoading, isError } = useTools();
@@ -25,6 +26,7 @@ export default function ToolsPage() {
     costMin: "",
     costMax: "",
   });
+  const [viewTarget, setViewTarget] = useState(null);
 
   const createMutation = useCreateTool();
   const updateMutation = useUpdateTool();
@@ -196,7 +198,7 @@ export default function ToolsPage() {
               selected={selected}
               onToggleSelect={toggleSelect}
               onToggleSelectAll={toggleSelectAll}
-              onView={(tool) => console.log("view", tool)}
+              onView={(tool) => setViewTarget(tool)}
               onEdit={(tool) => setEditTarget(tool)}
               onDelete={(tool) => setDeleteTarget(tool)}
               onReset={() => {
@@ -247,6 +249,20 @@ export default function ToolsPage() {
         title="Delete selected tools"
         count={selected.size}
         confirmLabel={`Delete ${selected.size} tools`}
+      />
+
+      <ToolDetailModal
+        open={!!viewTarget}
+        tool={viewTarget}
+        onClose={() => setViewTarget(null)}
+        onEdit={(tool) => {
+          setViewTarget(null);
+          setEditTarget(tool);
+        }}
+        onDelete={(tool) => {
+          setViewTarget(null);
+          setDeleteTarget(tool);
+        }}
       />
     </div>
   );
