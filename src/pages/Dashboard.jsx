@@ -72,15 +72,14 @@ export default function Dashboard() {
             trend={trends?.departments_change ?? "—"}
             trendUp={true}
             icon={Building2}
-            variant="pink"
+            variant="red"
           />
           <KPICard
             title="Cost/User"
             value={`€${costs?.cost_per_user ?? "—"}`}
             trend={trends?.cost_per_user_change ?? "—"}
-            trendUp={false}
             icon={Users}
-            variant="blue"
+            variant="pink"
           />
         </div>
       )}

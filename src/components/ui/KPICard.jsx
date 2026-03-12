@@ -3,23 +3,28 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 const variants = {
   success: {
     iconBg: "bg-gradient-to-br from-accent-green to-teal-400",
-    trendBg: "bg-accent-green/10",
-    trendColor: "text-status-active",
+    trendBg: "bg-accent-green",
+    trendColor: "text-white",
   },
   purple: {
     iconBg: "bg-gradient-to-br from-accent-purple to-accent-blue",
-    trendBg: "bg-accent-purple/10",
-    trendColor: "text-accent-purple",
+    trendBg: "bg-accent-purple",
+    trendColor: "text-white",
   },
   pink: {
     iconBg: "bg-gradient-to-br from-accent-pink to-orange-400",
-    trendBg: "bg-accent-pink/10",
-    trendColor: "text-accent-pink",
+    trendBg: "bg-accent-pink",
+    trendColor: "text-white",
   },
   blue: {
     iconBg: "bg-gradient-to-br from-accent-blue to-cyan-400",
-    trendBg: "bg-accent-blue/10",
-    trendColor: "text-accent-blue",
+    trendBg: "bg-accent-blue",
+    trendColor: "text-white",
+  },
+  red: {
+    iconBg: "bg-gradient-to-br from-status-unused to-orange-400",
+    trendBg: "bg-status-unused",
+    trendColor: "text-white",
   },
 };
 
@@ -28,7 +33,6 @@ export default function KPICard({
   value,
   subValue,
   trend,
-  trendUp = true,
   icon: Icon,
   variant = "purple",
 }) {
@@ -50,7 +54,7 @@ export default function KPICard({
       <div className="mb-2">
         <span className="text-2xl font-bold text-text-primary">{value}</span>
         {subValue && (
-          <span className="text-sm font-medium text-text-muted">
+          <span className="text-2xl font-medium text-text-muted">
             /{subValue}
           </span>
         )}
@@ -61,7 +65,6 @@ export default function KPICard({
         <span
           className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs font-medium ${styles.trendBg} ${styles.trendColor}`}
         >
-          {trendUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
           {trend}
         </span>
       </div>
