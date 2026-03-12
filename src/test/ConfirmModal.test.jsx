@@ -51,3 +51,37 @@ describe("ConfirmModal", () => {
     expect(screen.getByText("Delete 3 tools")).toBeInTheDocument();
   });
 });
+
+it("shows plural message when count is greater than 1", () => {
+  render(
+    <ConfirmModal
+      open={true}
+      onClose={() => {}}
+      onConfirm={() => {}}
+      loading={false}
+      count={5}
+    />,
+  );
+  expect(
+    screen.getByText(
+      "This will permanently delete 5 tools. This action cannot be undone.",
+    ),
+  ).toBeInTheDocument();
+});
+
+it("shows singular message when count is 1", () => {
+  render(
+    <ConfirmModal
+      open={true}
+      onClose={() => {}}
+      onConfirm={() => {}}
+      loading={false}
+      count={1}
+    />,
+  );
+  expect(
+    screen.getByText(
+      "This will permanently delete this tool. This action cannot be undone.",
+    ),
+  ).toBeInTheDocument();
+});
