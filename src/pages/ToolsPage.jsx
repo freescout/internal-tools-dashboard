@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Plus, Trash2, Search, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import ToolsTable from "../components/tools/ToolsTable";
 import ToolsSidebar from "../components/tools/ToolsSidebar";
 import {
@@ -16,16 +17,21 @@ import ToolDetailModal from "../components/tools/ToolDetailModal";
 export default function ToolsPage() {
   const { data: tools = [], isLoading, isError } = useTools();
 
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState(new Set());
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const location = useLocation();
+  const [search, setSearch] = useState(
+    new URLSearchParams(location.search).get("search") ?? "",
+  );
   const [filters, setFilters] = useState({
     department: "",
-    status: "",
+    status: new URLSearchParams(location.search).get("status") ?? "",
     category: "",
     costMin: "",
     costMax: "",
   });
+
+  const [selected, setSelected] = useState(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const [viewTarget, setViewTarget] = useState(null);
 
   const createMutation = useCreateTool();
