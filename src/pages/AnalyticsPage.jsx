@@ -447,8 +447,8 @@ export default function AnalyticsPage() {
       {/* Usage Analytics Row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <ChartCard
-          title="Outils les plus utilisés"
-          subtitle="Score pondéré : daily×4, weekly×3, monthly×2, rarely×1"
+          title="Most Used Tools"
+          subtitle="Weighted score : daily×4, weekly×3, monthly×2, rarely×1"
         >
           {loading || !derived ? (
             <SkeletonCard />
@@ -496,8 +496,8 @@ export default function AnalyticsPage() {
         </ChartCard>
 
         <ChartCard
-          title="Activité par département"
-          subtitle="Score d'usage agrégé sur tous les outils"
+          title="Department Activity"
+          subtitle="Aggregated usage score across all tools"
         >
           {loading || !derived ? (
             <SkeletonCard />
