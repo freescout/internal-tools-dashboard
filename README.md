@@ -125,7 +125,6 @@ Analytics (/analytics)
   -> Sélection barre top tools -> /tools?search=<nom-outil>
   -> Insight budget            -> /
   -> Outils les plus utilisés  -> /tools?search=<nom-outil>
-  -> Usage Analytics           -> /user_tools
 ```
 
 Les liens depuis Analytics pré-appliquent les filtres de la page Tools via les paramètres d'URL, lus au montage du composant via `useLocation`.
@@ -174,7 +173,7 @@ Les skeleton screens évitent les layout shifts (CLS) pendant le chargement sur 
 ## **🧪 Testing Strategy**
 
 ```
-All files  |  98.86% Stmts  |  94.5% Branch  |  100% Funcs  |  100% Lines
+All files | 99.12% Stmts | 94.59% Branch | 100% Funcs | 100% Lines
 ```
 
 | Fichier                     | Ce qui est testé                               |
@@ -240,12 +239,20 @@ Recharts choisi pour son intégration React native déclarative, `ResponsiveCont
 - Page Settings : gestion utilisateurs, alertes budget configurables, intégrations tierces
 - Authentification : login, rôles Admin / Viewer, permissions par département
 - Notifications : centre avec historique, alertes budget en temps réel
+- Dark/Light toggle : theme switcher (différenciateur J6 non implémenté)
+- Tool Recommendations : suggestions smart basées sur le département
+- Add Tool : workflow multi-step (modal en une seule étape actuellement)
 
 **Moyen terme**
 
 - Historique réel : endpoint dédié données mensuelles — supprimer l'interpolation dérivée
 - Export : rapports PDF/Excel avec charts et insights
 - Bulk import CSV avec validation et preview
+- Usage patterns : ajout de heatmaps et sparklines pour visualiser les comportements d’adoption dans le temps
+- Growth Trends : timeline des nouveaux outils ajoutés dans le temps
+- Drill-down par département sur la page Analytics
+- ROI par outil : coût / utilisateurs actifs réels via `/user_tools`
+- Pagination côté serveur sur Tools (`?_page=1&_limit=10`)
 
 **Long terme**
 
