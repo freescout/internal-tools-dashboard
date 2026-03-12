@@ -29,9 +29,9 @@ import { useAnalyticsPage } from "../hooks/useAnalyticsPage";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TIME_RANGES = [
-  { label: "4M", value: 30 },
-  { label: "6M", value: 90 },
-  { label: "8M", value: 365 },
+  { label: "30d", value: 30 },
+  { label: "90d", value: 90 },
+  { label: "1y", value: 365 },
 ];
 
 const PIE_COLORS = [
