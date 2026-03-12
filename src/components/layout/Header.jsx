@@ -8,7 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 const navLinks = [
   { label: "Dashboard", path: "/" },
@@ -18,7 +18,15 @@ const navLinks = [
 ];
 
 export default function Header() {
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const searchPlaceholder =
+    location.pathname === "/analytics"
+      ? "Search metrics, insights..."
+      : location.pathname === "/tools"
+        ? "Search tools, vendors, categories..."
+        : "Search tools...";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-surface-dark">
@@ -61,7 +69,7 @@ export default function Header() {
             <Search size={14} className="text-text-muted shrink-0" />
             <input
               type="text"
-              placeholder="Search tools..."
+              placeholder={searchPlaceholder}
               className="bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none w-full"
             />
           </div>
@@ -110,11 +118,14 @@ export default function Header() {
             <NavLink
               key={link.label}
               to={link.path}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                link.active
-                  ? "bg-accent-purple/10 text-accent-purple font-semibold"
-                  : "text-text-secondary hover:text-text-primary hover:bg-white/5"
-              }`}
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "bg-accent-purple/10 text-accent-purple"
+                    : "text-text-secondary hover:text-text-primary hover:bg-white/5"
+                }`
+              }
             >
               {link.label}
             </NavLink>
