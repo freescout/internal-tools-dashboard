@@ -67,6 +67,8 @@ export default function ToolsSidebar({
   filteredCount,
   collapsed,
   onToggleCollapse,
+  mobileOpen = false,
+  onCloseMobile,
 }) {
   const activeCount = [
     filters.department,
@@ -86,7 +88,7 @@ export default function ToolsSidebar({
 
   if (collapsed) {
     return (
-      <div className="w-10 shrink-0">
+      <div className="hidden md:block w-10 shrink-0">
         <button
           onClick={onToggleCollapse}
           className="p-2 rounded-lg border border-border hover:bg-white/5 transition-colors text-text-muted hover:text-text-primary"
@@ -98,8 +100,8 @@ export default function ToolsSidebar({
     );
   }
 
-  return (
-    <aside className="w-56 shrink-0 bg-surface border border-border rounded-2xl overflow-hidden self-start sticky top-24">
+  const sidebarContent = (
+    <aside className="w-full md:w-56 shrink-0 bg-surface border border-border rounded-2xl overflow-hidden self-start md:sticky md:top-24">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">
@@ -124,9 +126,9 @@ export default function ToolsSidebar({
             </button>
           )}
           <button
-            onClick={onToggleCollapse}
+            onClick={onCloseMobile ?? onToggleCollapse}
             className="p-1 rounded text-text-muted hover:text-text-primary transition-colors"
-            title="Collapse"
+            title="Close filters"
           >
             <X size={13} />
           </button>
@@ -134,13 +136,7 @@ export default function ToolsSidebar({
       </div>
 
       {/* Count */}
-      <div className="px-4 py-2.5 border-b border-border bg-white/2]">
-        {/*         <p className="text-xs text-text-muted">
-          Showing{" "}
-          <span className="text-text-primary font-medium">{filteredCount}</span>{" "}
-          of <span className="text-text-primary font-medium">{totalCount}</span>{" "}
-          tools
-        </p> */}
+      <div className="px-4 py-2.5 border-b border-border bg-white/2">
         <p className="text-xs text-text-muted">
           {filteredCount === totalCount ? (
             <>
@@ -264,5 +260,24 @@ export default function ToolsSidebar({
         </div>
       </Section>
     </aside>
+  );
+
+  if (mobileOpen) {
+    return (
+      <div className="fixed inset-0 z-40 md:hidden">
+        <button
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+          onClick={onCloseMobile}
+          aria-label="Close filters"
+        />
+        <div className="absolute inset-x-4 top-20 bottom-4 overflow-y-auto">
+          {sidebarContent}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="hidden md:block">{sidebarContent}</div>
   );
 }

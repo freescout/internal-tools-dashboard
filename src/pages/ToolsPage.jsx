@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2, Search, X } from "lucide-react";
+import { Plus, Trash2, Search, X, SlidersHorizontal } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import ToolsTable from "../components/tools/ToolsTable";
 import ToolsSidebar from "../components/tools/ToolsSidebar";
@@ -31,6 +31,7 @@ export default function ToolsPage() {
 
   const [selected, setSelected] = useState(new Set());
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const [viewTarget, setViewTarget] = useState(null);
 
@@ -123,7 +124,7 @@ export default function ToolsPage() {
   return (
     <div className="mx-auto max-w-6xl w-full px-6 py-6 space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-text-primary">
             Tools Catalog
@@ -132,49 +133,65 @@ export default function ToolsPage() {
             Manage your organisation's SaaS stack
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           {selected.size > 0 && (
             <button
               onClick={() => setBulkDeleteOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-status-unused/40 text-status-unused hover:bg-status-unused/10 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium border border-status-unused/40 text-status-unused hover:bg-status-unused/10 rounded-lg transition-colors"
             >
               <Trash2 size={14} />
-              Delete {selected.size}
+              <span className="hidden sm:inline">Delete {selected.size}</span>
+              <span className="sm:hidden">{selected.size}</span>
             </button>
           )}
           <button
             onClick={() => setAddOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-accent-purple hover:bg-accent-purple/90 text-white rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-accent-purple hover:bg-accent-purple/90 text-white rounded-lg transition-colors"
           >
             <Plus size={15} />
-            Add Tool
+            <span>Add Tool</span>
           </button>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
-        />
-        <input
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setSelected(new Set());
-          }}
-          placeholder="Search tools, vendors, categories…"
-          className="w-full bg-surface border border-border rounded-lg pl-9 pr-9 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-purple transition-colors"
-        />
-        {search && (
+      <div className="space-y-3">
+        {/* Search */}
+        <div className="relative w-full sm:max-w-md">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+          />
+          <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setSelected(new Set());
+            }}
+            placeholder="Search tools, vendors, categories…"
+            className="w-full bg-surface border border-border rounded-lg pl-9 pr-9 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-accent-purple transition-colors"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 md:hidden">
           <button
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+            onClick={() => setMobileFiltersOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
           >
-            <X size={13} />
+            <SlidersHorizontal size={14} />
+            Filters
           </button>
-        )}
+          <span className="text-xs text-text-muted">
+            {filtered.length} / {tools.length} tools
+          </span>
+        </div>
       </div>
 
       {/* Active filter chips */}
@@ -216,6 +233,8 @@ export default function ToolsPage() {
           filteredCount={filtered.length}
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
+          mobileOpen={mobileFiltersOpen}
+          onCloseMobile={() => setMobileFiltersOpen(false)}
         />
 
         <div className="flex-1 min-w-0 bg-surface border border-border rounded-2xl overflow-hidden">

@@ -85,7 +85,132 @@ export default function ToolsTable({
 
   return (
     <div className="overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="space-y-3 px-3 py-3 md:hidden">
+        {paginated.length === 0 ? (
+          <div className="px-3 py-16 text-center">
+            <div className="flex flex-col items-center gap-2 text-text-muted">
+              <Box size={28} className="opacity-30" />
+              <p className="text-sm">No tools match your filters</p>
+              {onReset && (
+                <button
+                  onClick={onReset}
+                  className="text-xs text-accent-purple hover:underline"
+                >
+                  Reset filters
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          paginated.map((tool) => {
+            const isSelected = hasSelection && selected.has(tool.id);
+            const { icon: Icon, bg, color, url } = getToolIcon(
+              tool.name,
+              tool.icon_url,
+            );
+            return (
+              <div
+                key={tool.id}
+                className={`rounded-xl border border-border bg-background/30 p-4 space-y-3 ${
+                  isSelected ? "ring-1 ring-accent-purple/40" : ""
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    {hasSelection && (
+                      <div className="pt-1">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => onToggleSelect(tool.id)}
+                        />
+                      </div>
+                    )}
+                    <div
+                      className={`h-9 w-9 rounded-lg ${bg} flex items-center justify-center shrink-0`}
+                    >
+                      {url ? (
+                        <img
+                          src={url}
+                          alt={tool.name}
+                          className="h-5 w-5 object-contain rounded"
+                        />
+                      ) : (
+                        <Icon size={16} className={color} />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-text-primary">
+                        {tool.name}
+                      </p>
+                      {tool.vendor && (
+                        <p className="text-xs text-text-muted truncate">
+                          {tool.vendor}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <StatusBadge status={tool.status ?? "unused"} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-lg bg-surface px-3 py-2">
+                    <p className="text-text-muted">Department</p>
+                    <p className="mt-1 text-text-primary">
+                      {tool.owner_department ?? "—"}
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-surface px-3 py-2">
+                    <p className="text-text-muted">Users</p>
+                    <p className="mt-1 text-text-primary">
+                      {tool.active_users_count ?? "—"}
+                    </p>
+                  </div>
+                  <div className="col-span-2 rounded-lg bg-surface px-3 py-2">
+                    <p className="text-text-muted">Monthly cost</p>
+                    <p className="mt-1 text-text-primary">
+                      {tool.monthly_cost
+                        ? formatCurrency(tool.monthly_cost)
+                        : "—"}
+                    </p>
+                  </div>
+                </div>
+
+                {(onView || onEdit || onDelete) && (
+                  <div className="flex items-center gap-2 pt-1">
+                    {onView && (
+                      <button
+                        onClick={() => onView(tool)}
+                        className="flex-1 rounded-lg border border-border px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/5 transition-colors"
+                      >
+                        View
+                      </button>
+                    )}
+                    {onEdit && (
+                      <button
+                        onClick={() => onEdit(tool)}
+                        className="flex-1 rounded-lg border border-accent-blue/30 px-3 py-2 text-sm text-accent-blue hover:bg-accent-blue/10 transition-colors"
+                      >
+                        Edit
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => onDelete(tool)}
+                        className="rounded-lg border border-status-unused/30 px-3 py-2 text-sm text-status-unused hover:bg-status-unused/10 transition-colors"
+                        aria-label={`Delete ${tool.name}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-border">
