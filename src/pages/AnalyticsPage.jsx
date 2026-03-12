@@ -277,6 +277,25 @@ export default function AnalyticsPage() {
         </ChartCard>
       )}
 
+      {/* Budget Progress */}
+      {!loading && derived && (
+        <ChartCard
+          title="Budget Progress"
+          subtitle={`${derived.kpis.utilizationPct}% du budget mensuel utilisé`}
+        >
+          <div className="w-full bg-border rounded-full h-2">
+            <div
+              className="h-2 rounded-full bg-linear-to-r from-accent-purple to-accent-blue transition-all"
+              style={{ width: `${derived.kpis.utilizationPct}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-text-muted">
+            <span>€{derived.kpis.totalSpend?.toLocaleString()}</span>
+            <span>€{derived.kpis.monthlyLimit?.toLocaleString()}</span>
+          </div>
+        </ChartCard>
+      )}
+
       {/* 2-col: donut + bars */}
       {loading || !derived ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

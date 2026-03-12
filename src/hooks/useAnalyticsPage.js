@@ -68,7 +68,9 @@ export function useAnalyticsPage() {
           : allMonths;
     const deptMap = {};
     tools.forEach((t) => {
-      const dept = t.owner_department || "Other";
+      const dept = (t.owner_department || "Other")
+        .trim()
+        .replace(/^\w/, (c) => c.toUpperCase());
       deptMap[dept] = (deptMap[dept] || 0) + Number(t.monthly_cost || 0);
     });
     const departmentCosts = Object.entries(deptMap)
