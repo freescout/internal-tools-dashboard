@@ -26,6 +26,9 @@ export const fetchRecentTools = () =>
 
 export const fetchAllTools = () => api.get("/tools").then((res) => res.data);
 
+export const fetchUserTools = () =>
+  api.get("/user_tools").then((res) => res.data);
+
 // Tools - CRUD
 export const createTool = (data) =>
   api.post(`/tools`, data).then((res) => res.data);

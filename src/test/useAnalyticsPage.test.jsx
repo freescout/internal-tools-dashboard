@@ -2,11 +2,12 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAnalyticsPage } from "../hooks/useAnalyticsPage";
-import { fetchAnalytics, fetchAllTools } from "../lib/api";
+import { fetchAnalytics, fetchAllTools, fetchUserTools } from "../lib/api";
 
 vi.mock("../lib/api", () => ({
   fetchAnalytics: vi.fn(),
   fetchAllTools: vi.fn(),
+  fetchUserTools: vi.fn(),
 }));
 
 function createWrapper() {
@@ -46,6 +47,7 @@ const analyticsData = {
 describe("useAnalyticsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    fetchUserTools.mockResolvedValue([]);
   });
 
   it("derives KPI and cost data from analytics and tools", async () => {
@@ -72,6 +74,12 @@ describe("useAnalyticsPage", () => {
         monthly_cost: 400,
         status: "expiring",
       },
+    ]);
+    fetchUserTools.mockResolvedValue([
+      { user_id: 1, tool_id: 1, usage_frequency: "daily" },
+      { user_id: 2, tool_id: 1, usage_frequency: "weekly" },
+      { user_id: 3, tool_id: 2, usage_frequency: "monthly" },
+      { user_id: 4, tool_id: 3, usage_frequency: "rarely" },
     ]);
 
     const { result } = renderHook(() => useAnalyticsPage(), {
@@ -103,6 +111,15 @@ describe("useAnalyticsPage", () => {
     expect(result.current.derived.insights.unusedCost).toBe(1800.5);
     expect(result.current.derived.insights.expiringTools).toHaveLength(1);
     expect(result.current.derived.insights.budgetHeadroom).toBe(12072);
+    expect(result.current.derived.mostUsedTools).toEqual([
+      { name: "Jira", fullName: "Jira", score: 7 },
+      { name: "Slack", fullName: "Slack", score: 2 },
+      { name: "VSCode", fullName: "VSCode", score: 1 },
+    ]);
+    expect(result.current.derived.deptActivity).toEqual([
+      { dept: "Communication", score: 7 },
+      { dept: "Engineering", score: 3 },
+    ]);
   });
 
   it("returns derived data when tools are empty", async () => {
@@ -167,6 +184,7 @@ it("handles null tool name without throwing", async () => {
 it("returns error state when analytics fetch fails", async () => {
   fetchAnalytics.mockRejectedValue(new Error("Network error"));
   fetchAllTools.mockResolvedValue([]);
+  fetchUserTools.mockResolvedValue([]);
   const { result } = renderHook(() => useAnalyticsPage(), {
     wrapper: createWrapper(),
   });
@@ -255,4 +273,52 @@ it("coerces string monthly_cost to number in unusedCost reduce", async () => {
   await waitFor(() => expect(result.current.derived).not.toBeNull());
 
   expect(result.current.derived.insights.unusedCost).toBe(2000);
+});
+
+it("derives usage analytics from user tools and skips unknown tool ids", async () => {
+  fetchAnalytics.mockResolvedValue(analyticsData);
+  fetchAllTools.mockResolvedValue([
+    {
+      id: 1,
+      name: "Zoom",
+      monthly_cost: 500,
+      status: "active",
+      owner_department: " communication ",
+    },
+    {
+      id: 2,
+      name: "A Very Long Tool Name For Usage Ranking",
+      monthly_cost: 400,
+      status: "active",
+      owner_department: "engineering",
+    },
+  ]);
+  fetchUserTools.mockResolvedValue([
+    { user_id: 1, tool_id: 1, usage_frequency: "daily" },
+    { user_id: 2, tool_id: 1, usage_frequency: "weekly" },
+    { user_id: 3, tool_id: 2, usage_frequency: "monthly" },
+    { user_id: 4, tool_id: 2, usage_frequency: "rarely" },
+    { user_id: 5, tool_id: 999, usage_frequency: "daily" },
+    { user_id: 6, tool_id: 2, usage_frequency: "unknown" },
+  ]);
+
+  const { result } = renderHook(() => useAnalyticsPage(), {
+    wrapper: createWrapper(),
+  });
+
+  await waitFor(() => expect(result.current.derived).not.toBeNull());
+
+  expect(result.current.derived.mostUsedTools).toEqual([
+    { name: "Zoom", fullName: "Zoom", score: 7 },
+    {
+      name: "A Very Long Tool Na…",
+      fullName: "A Very Long Tool Name For Usage Ranking",
+      score: 4,
+    },
+  ]);
+  expect(result.current.derived.deptActivity).toEqual([
+    { dept: "Communication", score: 7 },
+    { dept: "Engineering", score: 4 },
+    { dept: "Other", score: 4 },
+  ]);
 });

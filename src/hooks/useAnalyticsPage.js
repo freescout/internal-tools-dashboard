@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { fetchAnalytics, fetchAllTools } from "../lib/api";
+import { fetchAnalytics, fetchAllTools, fetchUserTools } from "../lib/api";
+
+const FREQ_SCORE = { daily: 4, weekly: 3, monthly: 2, rarely: 1 };
 
 function deterministicNoise(index) {
   const seeds = [120, -200, 340, -150, 280, -90, 410, -180];
@@ -8,7 +10,6 @@ function deterministicNoise(index) {
 }
 
 function buildMonthlySpend(current, previous, monthlyLimit) {
-  // Generate last 8 calendar months ending on current month
   const now = new Date();
   const months = Array.from({ length: 8 }, (_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (7 - i), 1);
@@ -42,9 +43,16 @@ export function useAnalyticsPage() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const userToolsQuery = useQuery({
+    queryKey: ["user_tools"],
+    queryFn: fetchUserTools,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const derived = useMemo(() => {
     const analytics = analyticsQuery.data;
     const tools = toolsQuery.data ?? [];
+    const userTools = userToolsQuery.data ?? [];
 
     if (!analytics) return null;
 
@@ -66,6 +74,7 @@ export function useAnalyticsPage() {
         : timeRange === 90
           ? allMonths.slice(-6)
           : allMonths;
+
     const deptMap = {};
     tools.forEach((t) => {
       const dept = (t.owner_department || "Other")
@@ -102,6 +111,39 @@ export function useAnalyticsPage() {
     );
     const budgetHeadroom = monthlyLimit - current;
 
+    // Most Used Tools: weighted score by usage_frequency, top 8
+    const toolScoreMap = {};
+    for (const ut of userTools) {
+      toolScoreMap[ut.tool_id] =
+        (toolScoreMap[ut.tool_id] ?? 0) + (FREQ_SCORE[ut.usage_frequency] ?? 1);
+    }
+    const mostUsedTools = Object.entries(toolScoreMap)
+      .map(([toolId, score]) => {
+        const tool = tools.find((t) => t.id === Number(toolId));
+        if (!tool) return null; // ← skip tools not in catalog
+        const fullName = tool.name ?? `Tool #${toolId}`;
+        const name =
+          fullName.length > 22 ? fullName.slice(0, 19) + "…" : fullName;
+        return { name, fullName, score };
+      })
+      .filter(Boolean) // ← remove nulls
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+
+    // Department Activity: total weighted score per department
+    const deptScoreMap = {};
+    for (const ut of userTools) {
+      const tool = tools.find((t) => t.id === ut.tool_id);
+      const dept = tool?.owner_department
+        ? tool.owner_department.trim().replace(/^\w/, (c) => c.toUpperCase())
+        : "Other";
+      deptScoreMap[dept] =
+        (deptScoreMap[dept] ?? 0) + (FREQ_SCORE[ut.usage_frequency] ?? 1);
+    }
+    const deptActivity = Object.entries(deptScoreMap)
+      .map(([dept, score]) => ({ dept, score }))
+      .sort((a, b) => b.score - a.score);
+
     return {
       kpis: {
         totalSpend: current,
@@ -123,13 +165,18 @@ export function useAnalyticsPage() {
         unusedCost,
         budgetHeadroom,
       },
+      mostUsedTools,
+      deptActivity,
     };
-  }, [analyticsQuery.data, toolsQuery.data, timeRange]);
+  }, [analyticsQuery.data, toolsQuery.data, userToolsQuery.data, timeRange]);
 
   return {
     derived,
-    loading: analyticsQuery.isLoading || toolsQuery.isLoading,
-    error: analyticsQuery.error || toolsQuery.error,
+    loading:
+      analyticsQuery.isLoading ||
+      toolsQuery.isLoading ||
+      userToolsQuery.isLoading,
+    error: analyticsQuery.error || toolsQuery.error || userToolsQuery.error,
     timeRange,
     setTimeRange,
   };

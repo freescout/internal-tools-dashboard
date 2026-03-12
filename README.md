@@ -124,22 +124,34 @@ Analytics (/analytics)
   -> Insight "Expiring soon"   -> /tools?status=expiring
   -> Sélection barre top tools -> /tools?search=<nom-outil>
   -> Insight budget            -> /
+  -> Outils les plus utilisés  -> /tools?search=<nom-outil>
+  -> Usage Analytics           -> /user_tools
 ```
 
 Les liens depuis Analytics pré-appliquent les filtres de la page Tools via les paramètres d'URL, lus au montage du composant via `useLocation`.
 
 ## **📊 Data Integration Strategy**
 
-| Page      | Endpoint                               | Usage                                          |
-| --------- | -------------------------------------- | ---------------------------------------------- |
-| Dashboard | `GET /analytics`                       | KPIs budget, tendances                         |
-| Dashboard | `GET /tools?_sort=updated_at&_limit=8` | Outils récemment mis à jour                    |
-| Tools     | `GET /tools`                           | Catalogue complet                              |
-| Tools     | `POST/PUT/DELETE /tools/:id`           | CRUD                                           |
-| Analytics | `GET /analytics`                       | KPIs globaux + points d’ancrage pour la courbe |
-| Analytics | `GET /tools`                           | Répartition par département, insights          |
+| Page      | Endpoint                               | Usage                                                                                           |
+| --------- | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Dashboard | `GET /analytics`                       | KPIs budget, tendances                                                                          |
+| Dashboard | `GET /tools?_sort=updated_at&_limit=8` | Outils récemment mis à jour                                                                     |
+| Tools     | `GET /tools`                           | Catalogue complet                                                                               |
+| Tools     | `POST/PUT/DELETE /tools/:id`           | CRUD                                                                                            |
+| Analytics | `GET /analytics`                       | KPIs globaux + points d’ancrage pour la courbe                                                  |
+| Analytics | `GET /tools`                           | Répartition par département, insights                                                           |
+| Analytics | `GET /user_tools`                      | Relations utilisateur↔outil pour les métriques d’usage (`usage_frequency`, `proficiency_level`) |
 
 **Données dérivées vs réelles :** le JSON server ne fournit pas d’historique mensuel. La courbe d’évolution est donc reconstruite à partir de `current_month_total` et `previous_month_total`, avec une variation déterministe plutôt qu’aléatoire. Ce choix est indiqué dans le sous-titre du graphique.
+
+### Usage Analytics
+
+Deux graphiques sont construits à partir de l’endpoint `/user_tools` :
+
+- **Outils les plus utilisés** : score pondéré par fréquence d’usage (`daily×4`, `weekly×3`, `monthly×2`, `rarely×1`), top 8, cliquable vers le catalogue
+- **Activité par département** : score agrégé par `owner_department` de l’outil, trié par score décroissant
+
+Les outils sans correspondance dans le catalogue (`tool_id` introuvable dans `/tools`) sont exclus du classement.
 
 ## **📱 Progressive Responsive Design**
 

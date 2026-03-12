@@ -443,6 +443,103 @@ export default function AnalyticsPage() {
           />
         </div>
       )}
+
+      {/* Usage Analytics Row */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <ChartCard
+          title="Outils les plus utilisés"
+          subtitle="Score pondéré : daily×4, weekly×3, monthly×2, rarely×1"
+        >
+          {loading || !derived ? (
+            <SkeletonCard />
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={derived.mostUsedTools}
+                layout="vertical"
+                margin={{ left: 12, right: 32, top: 4, bottom: 4 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  horizontal={false}
+                />
+                <XAxis
+                  type="number"
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 11,
+                  }}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={175}
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 12,
+                  }}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="score"
+                  fill="var(--color-accent-purple)"
+                  radius={[0, 4, 4, 0]}
+                  cursor="pointer"
+                  onClick={(d) =>
+                    navigate(`/tools?search=${encodeURIComponent(d.fullName)}`)
+                  }
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
+
+        <ChartCard
+          title="Activité par département"
+          subtitle="Score d'usage agrégé sur tous les outils"
+        >
+          {loading || !derived ? (
+            <SkeletonCard />
+          ) : (
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart
+                data={derived.deptActivity}
+                layout="vertical"
+                margin={{ left: 12, right: 32, top: 4, bottom: 4 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--color-border)"
+                  horizontal={false}
+                />
+                <XAxis
+                  type="number"
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 11,
+                  }}
+                />
+                <YAxis
+                  dataKey="dept"
+                  type="category"
+                  width={120}
+                  tick={{
+                    fill: "var(--color-text-secondary)",
+                    fontSize: 12,
+                  }}
+                />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar
+                  dataKey="score"
+                  fill="var(--color-accent-blue)"
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
+      </div>
     </div>
   );
 }
