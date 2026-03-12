@@ -3,6 +3,7 @@ import Header from "./components/layout/Header";
 import Dashboard from "./pages/Dashboard";
 import ToolsPage from "./pages/ToolsPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
     </BrowserRouter>
